@@ -53,6 +53,7 @@ def get_logger():
 
 PII_FIELDS = ('name', 'email', 'phone', 'ssn', 'password')
 
+
 def get_db():
     db_username = os.environ.get('PERSONAL_DATA_DB_USERNAME', 'root')
     db_password = os.environ.get('PERSONAL_DATA_DB_PASSWORD', '')
