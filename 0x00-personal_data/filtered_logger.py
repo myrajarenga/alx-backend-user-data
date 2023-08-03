@@ -8,6 +8,7 @@ import logging
 import csv
 import os
 import mysql.connector
+from os import environ
 
 
 class RedactingFormatter(logging.Formatter):
@@ -17,11 +18,30 @@ class RedactingFormatter(logging.Formatter):
     SEPARATOR = ";"
 
     def __init__(self, fields: List[str]):
-        super().__init__("[HOLBERTON] %(name)s %(levelname)s %(asctime)-15s: %(message)s")
+        """
+        Constructor method for RedactingFormatter class
+
+        Args:
+            fields: list of fields to redact in log messages
+        """
+        # Define the format string as a separate variable
+        log_format = ("[HOLBERTON] %(name)s %(levelname)s"
+                      "%(asctime)-15s: %(message)s")
+
+        # Use the variable in super().__init__()
+        super().__init__(log_format)
+
         self.fields = fields
 
     def format(self, record: logging.LogRecord) -> str:
-        record.msg = filter_datum(self.fields, self.REDACTION, record.msg, self.SEPARATOR)
+        """
+        Formats the specified log record as text.
+
+        Filters values in incoming log records using filter_datum.
+        """
+        record.msg = filter_datum(
+                self.fields, self.REDACTION, record.msg, self.SEPARATOR
+                )
         return super().format(record)
 
 
@@ -37,6 +57,13 @@ def filter_datum(
 
 
 def get_logger():
+    """
+    Returns a Logger object for handling Personal Data
+
+    Returns:
+        A Logger object with INFO log level and RedactingFormatter
+        formatter for filtering PII fields
+    """
     logger = logging.getLogger("user_data")
     logger.setLevel(logging.INFO)
     logger.propagate = False
@@ -51,10 +78,18 @@ def get_logger():
     return logger
 
 
+# # PII fields to be redacted
 PII_FIELDS = ('name', 'email', 'phone', 'ssn', 'password')
 
 
 def get_db():
+    """
+    Returns a MySQLConnection object for accessing Personal Data database
+
+    Returns:
+        A MySQLConnection object using connection details from
+        environment variables
+    """
     db_username = os.environ.get('PERSONAL_DATA_DB_USERNAME', 'root')
     db_password = os.environ.get('PERSONAL_DATA_DB_PASSWORD', '')
     db_host = os.environ.get('PERSONAL_DATA_DB_HOST', 'localhost')
