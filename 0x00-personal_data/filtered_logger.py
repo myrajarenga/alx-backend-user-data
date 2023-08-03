@@ -52,7 +52,7 @@ def filter_datum(
     """function onbfuscate specific fields in log mesage"""
     return re.sub(
             fr'({"|".join(map(re.escape, fields))})=([^{separator}]*)',
-            fr'\1={redaction}', message
+            fr'\1={redaction}', str(message)
             )
 
 
@@ -90,8 +90,9 @@ def get_db():
         A MySQLConnection object using connection details from
         environment variables
     """
-    db_username = os.environ.get('PERSONAL_DATA_DB_USERNAME', 'root')
-    db_password = os.environ.get('PERSONAL_DATA_DB_PASSWORD', '')
+    db_username = os.environ.get('PERSONAL_DATA_DB_USERNAME', 'my_app_user')
+    db_password = os.environ.get('PERSONAL_DATA_DB_PASSWORD', 'my_password')
+
     db_host = os.environ.get('PERSONAL_DATA_DB_HOST', 'localhost')
     db_name = os.environ.get('PERSONAL_DATA_DB_NAME')
 
@@ -106,3 +107,33 @@ def get_db():
     except mysql.connector.Error as e:
         print(f"Error connecting to the database: {e}")
         return None
+
+
+def main():
+    db_connection = get_db()
+    if db_connection:
+        print("Connected to the database!")
+        cursor = db_connection.cursor()
+        cursor.execute("SELECT * FROM users;")
+        fields_to_obfuscate = ['name', 'email', 'phone', 'ssn', 'password']
+        formatter = RedactingFormatter(fields_to_obfuscate)
+        logging.basicConfig(level=logging.INFO, format='%(message)s')
+        logger = logging.getLogger('user_data')
+        logger.setLevel(logging.INFO)
+        logger.addHandler(logging.StreamHandler())
+        logger.handlers[0].setFormatter(formatter)
+
+        print("[HOLBERTON] user_data"
+              "INFO 2019-11-19 18:37:59,596: Filtered data:")
+        print("\nFiltered fields:\nname\nemail\nphone\nssn\npassword")
+        for row in cursor:
+            row_str = '; '.join(str(item) for item in row)
+            logger.info(row)
+        cursor.close()
+        db_connection.close()
+    else:
+        print("Database connection failed.")
+
+
+if __name__ == "__main__":
+    main()
