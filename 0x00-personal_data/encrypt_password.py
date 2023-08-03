@@ -5,7 +5,7 @@ Password Encryption and Validation Module
 import bcrypt
 
 
-def hash_password(password:str) -> bytes:
+def hash_password(password: str) -> bytes:
     """
     Hashes the input password using bcrypt.
 
@@ -17,7 +17,7 @@ def hash_password(password:str) -> bytes:
     """
     password_bytes = password.encode('utf-8')
 
-    #generating  salt and has the password using bcrypt
+    """generating  salt and has the password using bcrypt"""
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password_bytes, salt)
 
@@ -28,4 +28,3 @@ if __name__ == "__main__":
     password = "MyAmazingPassw0rd"
     print(hash_password(password))
     print(hash_password(password))
-
