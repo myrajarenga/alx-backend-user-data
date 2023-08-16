@@ -33,10 +33,23 @@ class DB:
         return self.__session
 
     def add_user(self, email: str, hashed_password: str) -> User:
-        """_summary_
+        """
+        function to add user on db
         """
         new_user = User(email=email, hashed_password=hashed_password)
         # add new user and commit to database
         self._session.add(new_user)
         self._session.commit()
         return new_user
+
+    def find_user_by(self, **kwargs) -> User:
+        """
+        function to find user in db
+        """
+        if not kwargs:
+            raise InvalidRequestError
+
+        user = self._session.query(User).filter_by(**kwargs).first()
+        if not user:
+            raise NoResultFound
+        return user
